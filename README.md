@@ -17,4 +17,4 @@ Ce projet analyse l'évolution du PIB et de l'inflation dans plusieurs pays d'Af
 ![Évolution de l'Inflation](inflation.png)
 
 ## Code
-Le code utilisé pour générer les graphiques est disponible dans le notebook Jupyter : [analyse_pib_inflation.ipynb](analyse_pib_inflation.ipynb).
+Le code utilisé pour générer les graphiques est disponible dans le notebook Jupyter : [(http://localhost:8888/notebooks/donn%C3%A9es_macro%C3%A9co.ipynb)].
