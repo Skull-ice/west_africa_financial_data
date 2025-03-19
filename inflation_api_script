@@ -1,0 +1,67 @@
+import matplotlib.pyplot as plt
+import sqlite3
+import requests
+import pandas as pd
+
+
+
+# Définir la fonction fetch_imf_data
+def fetch_imf_data(country_code, indicator, start_year, end_year):
+    """
+    Récupère les données du FMI pour un pays et un indicateur donnés.
+    """
+    url = f"https://www.imf.org/external/datamapper/api/v1/{indicator}?periods={start_year},{end_year}"
+    response = requests.get(url)
+    data = response.json()
+    
+    # Vérifier si les clés existent
+    if 'values' in data and indicator in data['values'] and country_code in data['values'][indicator]:
+        return data['values'][indicator][country_code]
+    else:
+        print(f"Données non disponibles pour {country_code} ou {indicator}")
+        return {}
+
+# Liste des pays et codes
+countries = {
+    "Côte d'Ivoire": "CIV",
+    "Bénin": "BEN",
+    "Sénégal": "SEN",
+    "Mali": "MLI",
+    "Ghana": "GHA",
+    "Sierra Leone": "SLE",
+    "Nigeria": "NGA"
+}
+
+# Collecter les données pour chaque pays
+all_data = []
+
+for country, code in countries.items():
+    # Récupérer l'inflation
+    inflation_data = fetch_imf_data(code, "PCPIPCH", 2013, 2023)
+    
+    # Si des données sont disponibles, les ajouter au DataFrame
+    if inflation_data:
+        df_inflation = pd.DataFrame(list(inflation_data.items()), columns=['Year', 'Inflation'])
+        df_inflation['Country'] = country
+        all_data.append(df_inflation)
+    else:
+        print(f"Aucune donnée disponible pour {country} ({code})")
+
+# Combiner toutes les données en un seul DataFrame
+if all_data:
+    final_df = pd.concat(all_data, ignore_index=True)
+
+    # Tracer le graphique d'inflation
+    plt.figure(figsize=(12, 6))
+    for country in final_df['Country'].unique():
+        country_data = final_df[final_df['Country'] == country]
+        plt.plot(country_data['Year'], country_data['Inflation'], label=country, marker='o')
+
+    plt.title('Évolution de l\'Inflation (2013-2023)')
+    plt.xlabel('Année')
+    plt.ylabel('Inflation (%)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+else:
+    print("Aucune donnée disponible pour les pays sélectionnés.")
