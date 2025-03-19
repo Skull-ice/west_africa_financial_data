@@ -1,0 +1,51 @@
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Fonction pour récupérer les données de la Banque Mondiale
+def fetch_worldbank_data(country_code, indicator, start_year, end_year):
+    url = f"https://api.worldbank.org/v2/country/{country_code}/indicator/{indicator}?format=json&date={start_year}:{end_year}"
+    response = requests.get(url)
+    data = response.json()
+    return pd.DataFrame(data[1])
+
+# Liste des pays et codes
+countries = {
+    "Côte d'Ivoire": "CI",
+    "Sénégal": "SN",
+    "Ghana": "GH",
+    "Nigeria": "NG",
+    "Sierra Leone": "SL",
+    "Mali": "ML",
+    "Bénin": "BJ"
+}
+
+# Collecter les données pour chaque pays
+all_data = []
+
+for country, code in countries.items():
+    # Récupérer le PIB
+    df_gdp = fetch_worldbank_data(code, "NY.GDP.MKTP.CD", 2013, 2023)
+    df_gdp['Country'] = country
+    all_data.append(df_gdp)
+
+# Combiner toutes les données en un seul DataFrame
+final_df = pd.concat(all_data, ignore_index=True)
+
+# Trier les données par année
+final_df.sort_values(by='date', inplace=True)
+
+# Tracer le graphique du PIB avec une taille de figure plus petite
+plt.figure(figsize=(10, 6))  # Taille réduite à 10x6 pouces
+for country in final_df['Country'].unique():
+    country_data = final_df[final_df['Country'] == country]
+    plt.plot(country_data['date'], country_data['value'], label=country, marker='o', linestyle='-')
+
+# Personnaliser le graphique
+plt.title('Évolution du PIB en Afrique de l\'Ouest (2013-2023)', fontsize=16)
+plt.xlabel('Année', fontsize=14)
+plt.ylabel('PIB (en USD)', fontsize=14)
+plt.legend(title='Pays', bbox_to_anchor=(1.05, 1), loc='upper left')  # Légende à droite
+plt.grid(True, linestyle='--', alpha=0.7)
+plt.tight_layout()  # Ajuster la mise en page
+plt.show()
